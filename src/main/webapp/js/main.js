@@ -23,6 +23,70 @@ const App = () => {
       .catch((err) => alert(`Failed to get sources: ${err}`));
   };
 
+  const processAdd = (ev) => {
+    ev.preventDefault();
+
+    let title = encodeURIComponent(
+      document.querySelector("#feed_title_input").value
+    );
+    let url = encodeURIComponent(
+      document.querySelector("#feed_url_input").value
+    );
+    let folder = encodeURIComponent(
+      document.querySelector("#feed_folder_input").value
+    );
+
+    console.log(title, url, folder);
+
+    fetch("/sources", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `feed_title=${title}&feed_url=${url}&feed_folder=${folder}`,
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        alert(data.message);
+        if (!data.error) {
+          refreshSources();
+        }
+      })
+      .catch((err) => alert(err));
+  };
+
+  const processEdit = (ev) => {
+    ev.preventDefault();
+
+    let newTitle = encodeURIComponent(
+      document.querySelector("#new_feed_title_input").value
+    );
+    let newUrl = encodeURIComponent(
+      document.querySelector("#new_feed_url_input").value
+    );
+    let newFolder = encodeURIComponent(
+      document.querySelector("#new_feed_folder_input").value
+    );
+
+    console.log(selectedSource.id, newTitle, newUrl, newFolder);
+
+    fetch("/sources", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `feed_id=${selectedSource.id}&new_feed_title=${newTitle}&new_feed_url=${newUrl}&new_feed_folder=${newFolder}`,
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        alert(data.message);
+        if (!data.error) {
+          refreshSources();
+        }
+      })
+      .catch((err) => alert(err));
+  };
+
   const buttonClasses =
     "w-full flex align-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-sky-400 hover:bg-sky-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white mx-1 transition-all duration-100";
 
@@ -72,16 +136,18 @@ const App = () => {
               Refresh Feed
             </button>
             <${editFeedModal}
+              id=${selectedSource.id}
               title=${selectedSource.title}
               url=${selectedSource.url}
               folder=${selectedSource.folder}
+              onsubmit=${processEdit}
             />
           </div>
         `}
       </div>
       <div class="col-span-8 h-screen px-2">V</div>
 
-      <${addFeedModal} />
+      <${addFeedModal} onsubmit=${processAdd} />
     </div>
   `;
 };

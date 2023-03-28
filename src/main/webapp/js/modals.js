@@ -3,7 +3,7 @@ import { h } from "https://esm.sh/preact";
 
 const html = htm.bind(h);
 
-export const addFeedModal = () => html`
+export const addFeedModal = (props) => html`
   <div
     data-te-modal-init
     class="fixed top-0 left-0 z-[1055] hidden h-full w-full overflow-y-auto overflow-x-hidden outline-none"
@@ -51,7 +51,7 @@ export const addFeedModal = () => html`
           </button>
         </div>
         <div class="relative flex-auto p-4" data-te-modal-body-ref>
-          <form id="add_feed_form" method="post" action="/sources">
+          <form id="add_feed_form" onsubmit=${props.onsubmit}>
             <div class="relative mb-6" data-te-input-wrapper-init>
               <input
                 type="text"
@@ -157,7 +157,8 @@ export const editFeedModal = (props) => html`
           </button>
         </div>
         <div class="relative flex-auto p-4" data-te-modal-body-ref>
-          <form id="add_feed_form" method="put" action="/sources">
+          <form id="add_feed_form" onsubmit=${props.onsubmit}>
+            <input type="text" hidden name="feed_id" value=${props.id} />
             <div class="relative mb-6" data-te-input-wrapper-init>
               <input
                 type="text"
@@ -209,7 +210,7 @@ export const editFeedModal = (props) => html`
               data-te-ripple-init
               data-te-ripple-color="light"
             >
-              Add Feed
+              Save Changes
             </button>
           </form>
         </div>
