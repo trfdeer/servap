@@ -1,10 +1,10 @@
-CREATE TABLE "sources" (
-	"id"	INTEGER,
-	"title"	TEXT NOT NULL UNIQUE,
-	"url"	TEXT NOT NULL UNIQUE,
-	"favicon_url"	TEXT,
-	"folder"	TEXT,
-	"date_added"	INTEGER NOT NULL,
-	"date_updated"	INTEGER NOT NULL,
-	PRIMARY KEY("id" AUTOINCREMENT)
+CREATE TABLE servap.sources (
+	id INTEGER AUTO_INCREMENT,
+	title VARCHAR(512) NOT NULL UNIQUE,
+	url	VARCHAR(512) NOT NULL UNIQUE,
+	favicon_url	TEXT,
+	folder TEXT,
+	date_added TIMESTAMP NOT NULL,
+	date_updated TIMESTAMP NOT NULL,
+	PRIMARY KEY(id)
 );
