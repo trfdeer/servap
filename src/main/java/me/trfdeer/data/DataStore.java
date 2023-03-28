@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 
@@ -29,19 +30,20 @@ public class DataStore {
 
     public int addSource(String folder, String title, String url, String faviconUrl) {
         // TODO: Custom message if item already exists?
+
         try {
 
             PreparedStatement st = this.conn.prepareStatement(
                     "INSERT INTO sources (title, url, favicon_url, folder, date_added, date_updated) VALUES (?, ?, ?, ?, ?, ?)",
                     PreparedStatement.RETURN_GENERATED_KEYS);
 
-            long currentEpoch = Instant.now().getEpochSecond();
+            Timestamp timeNow = Timestamp.from(Instant.now());
             st.setString(1, title);
             st.setString(2, url);
             st.setString(3, faviconUrl);
             st.setString(4, folder);
-            st.setLong(5, currentEpoch);
-            st.setLong(6, currentEpoch);
+            st.setTimestamp(5, timeNow);
+            st.setTimestamp(6, timeNow);
 
             st.executeUpdate();
             ResultSet rs = st.getGeneratedKeys();
@@ -49,6 +51,7 @@ public class DataStore {
             int insertedId = rs.getInt(1);
 
             this.conn.commit();
+            st.close();
             return insertedId;
 
         } catch (SQLException e) {
@@ -73,6 +76,7 @@ public class DataStore {
                 String name = rs.getString(1);
                 folders.add(name);
             }
+            st.close();
 
             return folders;
 
@@ -100,6 +104,7 @@ public class DataStore {
                 Source src = new Source(id, title, url, faviconUrl, folder);
                 sources.add(src);
             }
+            st.close();
 
             return sources;
 
@@ -109,20 +114,20 @@ public class DataStore {
         }
     }
 
-    public int updateSource(int id, String newTitle, String newUrl, String newFaviconUrl, String newFolder) {
+    public int updateSource(int id, String newTitle, String newUrl, String newFolder) {
         try {
             PreparedStatement st = this.conn.prepareStatement(
-                    "UPDATE sources SET title = ?, url = ?, favicon_url = ?, date_updated = ?, folder = ? WHERE id = ?");
+                    "UPDATE sources SET title = ?, url = ?, date_updated = ?, folder = ? WHERE id = ?");
 
             st.setString(1, newTitle);
             st.setString(2, newUrl);
-            st.setString(3, newFaviconUrl);
-            st.setLong(4, Instant.now().getEpochSecond());
-            st.setString(5, newFolder);
-            st.setInt(6, id);
+            st.setTimestamp(3, Timestamp.from(Instant.now()));
+            st.setString(4, newFolder);
+            st.setInt(5, id);
 
             st.execute();
             this.conn.commit();
+            st.close();
             return id;
 
         } catch (SQLException e) {
@@ -136,13 +141,15 @@ public class DataStore {
         }
     }
 
-    public boolean deleteSource(int id) {
+    public int deleteSource(int id) {
         try {
             PreparedStatement st = this.conn.prepareStatement("DELETE FROM sources WHERE id = ?");
             st.setInt(1, id);
 
-            st.execute();
+            int count = st.executeUpdate();
             this.conn.commit();
+            st.close();
+            return count;
         } catch (SQLException e) {
             System.out.println("Failed to delete source: " + e.getMessage());
             try {
@@ -150,8 +157,8 @@ public class DataStore {
             } catch (SQLException rollbackErr) {
                 System.err.println("Failed to rollback transaction: " + rollbackErr.getMessage());
             }
+            return -1;
         }
-        return false;
     }
 
     @Override
