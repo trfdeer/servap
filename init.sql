@@ -1,22 +1,22 @@
-CREATE TABLE "directories" (
-	"id"	INTEGER,
-	"name"	TEXT NOT NULL,
-	"parent_id"	INTEGER,
-	FOREIGN KEY("parent_id") REFERENCES "directories"("id"),
-	UNIQUE("name","parent_id"),
-	PRIMARY KEY("id" AUTOINCREMENT)
+CREATE TABLE servap.sources (
+	id INTEGER AUTO_INCREMENT,
+	title VARCHAR(512) NOT NULL UNIQUE,
+	url	VARCHAR(512) NOT NULL UNIQUE,
+	favicon_url	TEXT,
+	folder TEXT,
+	date_added TIMESTAMP NOT NULL,
+	date_updated TIMESTAMP NOT NULL,
+	PRIMARY KEY(id)
 );
 
-CREATE TABLE "sources" (
-	"id"	INTEGER,
-	"directory_id"	INTEGER,
-	"title"	TEXT NOT NULL UNIQUE,
-	"url"	TEXT NOT NULL UNIQUE,
-	"favicon_url"	TEXT,
-	"date_added"	INTEGER NOT NULL,
-	"date_updated"	INTEGER NOT NULL,
-	FOREIGN KEY("directory_id") REFERENCES "directories"("id"),
-	PRIMARY KEY("id" AUTOINCREMENT)
+CREATE TABLE servap.links(
+	id INTEGER AUTO_INCREMENT,
+	source_id INTEGER NOT NULL,
+	title VARCHAR(512) NOT NULL,
+	link VARCHAR(2000) NOT NULL UNIQUE,
+	description TEXT,
+	publish_date TIMESTAMP NOT NULL,
+	author VARCHAR(100),
+	PRIMARY KEY (id),
+	FOREIGN KEY (source_id) REFERENCES servap.sources(id)
 );
-
-INSERT INTO "directories" ("id", "name", "parent_ud") VALUES (-1, "root");
