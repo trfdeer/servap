@@ -2,7 +2,7 @@ package me.trfdeer;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -55,8 +55,8 @@ public class SourcesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             DataStore ds = new DataStore();
-            ArrayList<Source> sources = ds.getAllSources();
-            ArrayList<String> directories = ds.getAllDirectories();
+            List<Source> sources = ds.getAllSources();
+            List<String> directories = ds.getAllDirectories();
             SourceResponse respData = new SourceResponse(sources, directories);
 
             Gson gson = new Gson();

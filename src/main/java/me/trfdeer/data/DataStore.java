@@ -9,7 +9,9 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
+import me.trfdeer.model.Link;
 import me.trfdeer.model.Source;
 
 public class DataStore {
@@ -65,12 +67,12 @@ public class DataStore {
         }
     }
 
-    public ArrayList<String> getAllDirectories() {
+    public List<String> getAllDirectories() {
         try {
             Statement st = this.conn.createStatement();
             ResultSet rs = st.executeQuery("SELECT DISTINCT folder FROM sources ORDER BY folder ASC");
 
-            ArrayList<String> folders = new ArrayList<>();
+            List<String> folders = new ArrayList<>();
 
             while (rs.next()) {
                 String name = rs.getString(1);
@@ -86,13 +88,40 @@ public class DataStore {
         }
     }
 
-    public ArrayList<Source> getAllSources() {
+    public Source getSource(int sourceId) {
+        try {
+            PreparedStatement st = this.conn.prepareStatement(
+                    "SELECT id, title, url, favicon_url, folder FROM sources WHERE id = ? LIMIT 1");
+
+            st.setInt(1, sourceId);
+            ResultSet rs = st.executeQuery();
+            rs.next();
+
+            int id = rs.getInt(1);
+            String title = rs.getString(2);
+            String url = rs.getString(3);
+            String faviconUrl = rs.getString(4);
+            String folder = rs.getString(5);
+
+            Source src = new Source(id, title, url, faviconUrl, folder);
+
+            st.close();
+
+            return src;
+
+        } catch (Exception err) {
+            System.err.println("Failed to retrieve sources: " + err.getMessage());
+            return null;
+        }
+    }
+
+    public List<Source> getAllSources() {
         try {
             Statement st = this.conn.createStatement();
             ResultSet rs = st
                     .executeQuery("SELECT id, title, url, favicon_url, folder FROM sources ORDER BY title ASC");
 
-            ArrayList<Source> sources = new ArrayList<>();
+            List<Source> sources = new ArrayList<>();
 
             while (rs.next()) {
                 int id = rs.getInt(1);
@@ -158,6 +187,67 @@ public class DataStore {
                 System.err.println("Failed to rollback transaction: " + rollbackErr.getMessage());
             }
             return -1;
+        }
+    }
+
+    public int addLinks(List<Link> links) {
+        try {
+            PreparedStatement st = this.conn.prepareStatement(
+                    "INSERT IGNORE INTO links (`source_id`, `title`, `link`, `description`, `publish_date`, `author`) VALUES (?, ?, ?, ?, ?, ?)");
+
+            for (Link link : links) {
+                st.setInt(1, link.sourceId);
+                st.setString(2, link.title);
+                st.setString(3, link.link);
+                st.setString(4, link.description);
+                st.setTimestamp(5, Timestamp.from(link.publishDate));
+                st.setString(6, link.author);
+                st.addBatch();
+            }
+
+            int[] count = st.executeBatch();
+
+            int linksAdded = 0;
+            for (int c : count)
+                linksAdded += c;
+
+            this.conn.commit();
+            st.close();
+
+            return linksAdded;
+
+        } catch (Exception err) {
+            System.err.println("Failed to add links: " + err.getMessage());
+            return -1;
+        }
+    }
+
+    public List<Link> getLinks(int sourceId) {
+        try {
+            PreparedStatement st = this.conn.prepareStatement(
+                    "SELECT id, title, link, description, publish_date, author FROM links WHERE source_id=?");
+
+            st.setInt(1, sourceId);
+            ResultSet rs = st.executeQuery();
+
+            List<Link> links = new ArrayList<>();
+
+            while (rs.next()) {
+                int id = rs.getInt(1);
+                String title = rs.getString(2);
+                String link = rs.getString(3);
+                String description = rs.getString(4);
+                Instant publishDate = rs.getTimestamp(5).toInstant();
+                String author = rs.getString(6);
+
+                links.add(new Link(id, sourceId, title, link, description, author, publishDate));
+            }
+
+            return links;
+
+        } catch (Exception err) {
+            System.err.println("Failed to add links: " + err.getMessage());
+            return null;
         }
     }
 

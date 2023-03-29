@@ -1,5 +1,6 @@
 import htm from "https://esm.sh/htm";
 import { h, render } from "https://esm.sh/preact";
+import Markup from "https://esm.sh/preact-markup";
 import { useState } from "https://esm.sh/preact/hooks";
 
 import { addFeedModal, editFeedModal } from "./modals.js";
@@ -9,9 +10,14 @@ const html = htm.bind(h);
 
 const App = () => {
   const [folders, setFolders] = useState([]);
+
   const [sources, setSources] = useState([]);
   const [selectedSource, setSelectedSource] = useState(null);
-  const [selectedLink, setSelectedLink] = useState("");
+
+  const [links, setLinks] = useState([]);
+  const [selectedLink, setSelectedLink] = useState(null);
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const refreshSources = () => {
     fetch("/sources")
@@ -19,6 +25,15 @@ const App = () => {
       .then((data) => {
         setFolders(data.data.folders);
         setSources(data.data.sources);
+      })
+      .catch((err) => alert(`Failed to get sources: ${err}`));
+  };
+
+  const refreshFeed = () => {
+    fetch(`/feed?refresh=1&source=${selectedSource.id}`)
+      .then((resp) => resp.json())
+      .then((data) => {
+        setLinks(data.data);
       })
       .catch((err) => alert(`Failed to get sources: ${err}`));
   };
@@ -93,11 +108,27 @@ const App = () => {
   const sourceClicked = (sourceTitle) => {
     let source = sources.filter((src) => src.title == sourceTitle)[0];
     setSelectedSource(source);
+
+    setLinks([]);
+    setSelectedLink(null);
+
+    fetch(`/feed?refresh=0&source=${source.id}`)
+      .then((resp) => resp.json())
+      .then((data) => {
+        setLinks(data.data);
+      })
+      .catch((err) => alert(`Failed to get sources: ${err}`));
+  };
+
+  const linkClicked = (linkId) => {
+    console.log(linkId);
+    let link = links.filter((it) => it.id == linkId)[0];
+    setSelectedLink(link);
   };
 
   return html`
     <div class="grid grid-cols-12 bg-sky-100">
-      <div class="col-span-2 h-screen px-2">
+      <div class="col-span-3 h-screen px-2">
         <div class="flex items-center w-full place-content-evenly my-2">
           <button
             class="${buttonClasses}"
@@ -118,34 +149,69 @@ const App = () => {
         <div class="w-full h-0 border rounded-full border-sky-400" />
         ${sourcesToHtml(folders, sources, sourceClicked)}
       </div>
-      <div class="col-span-2 h-screen border-x-2 border-sky-600 px-2">
-        ${selectedSource &&
-        html`
-          <div class="w-full text-bold text-xl text-center text-black">
-            ${selectedSource.title}
-          </div>
-          <div class="flex items-center w-full place-content-evenly my-2">
-            <button
-              class="${buttonClasses}"
-              data-te-toggle="modal"
-              data-te-target="#editFeedModal"
-            >
-              Edit Feed
-            </button>
-            <button class="${buttonClasses}" onclick=${refreshSources}>
-              Refresh Feed
-            </button>
-            <${editFeedModal}
-              id=${selectedSource.id}
-              title=${selectedSource.title}
-              url=${selectedSource.url}
-              folder=${selectedSource.folder}
-              onsubmit=${processEdit}
-            />
-          </div>
-        `}
+      <div
+        class="col-span-3 h-screen border-x-2 border-sky-600 overflow-y-auto"
+      >
+        ${selectedSource == null
+          ? html`
+              <div class="h-full w-full text-center pt-8">Select a Source</div>
+            `
+          : html`
+              <div class="w-full text-bold text-xl text-center text-black mt-4">
+                ${selectedSource.title}
+              </div>
+              <div class="flex items-center w-full place-content-evenly my-2">
+                <button
+                  class="${buttonClasses}"
+                  data-te-toggle="modal"
+                  data-te-target="#editFeedModal"
+                >
+                  Edit Feed
+                </button>
+                <button class="${buttonClasses}" onclick=${refreshFeed}>
+                  Refresh Feed
+                </button>
+                <${editFeedModal}
+                  id=${selectedSource.id}
+                  title=${selectedSource.title}
+                  url=${selectedSource.url}
+                  folder=${selectedSource.folder}
+                  onsubmit=${processEdit}
+                />
+              </div>
+              <div>
+                ${links.map(
+                  (it) => html`
+                    <div
+                      class="select-none border-y border-sky-400 py-2 px-1 cursor-pointer hover:bg-sky-200 transition-all duration-100"
+                      onclick=${() => linkClicked(it.id)}
+                    >
+                      <div class="font-bold text-lg">${it.title}</div>
+                      <div class="font-italic text-sm">${it.publishDate}</div>
+                    </div>
+                  `
+                )}
+              </div>
+            `}
       </div>
-      <div class="col-span-8 h-screen px-2">V</div>
+      <div class="col-span-6 h-screen p-8 overflow-y-auto">
+        ${selectedLink == null
+          ? html` <div class="h-full w-full text-center">Select a Link</div> `
+          : html`
+              <div>
+                <div class="text-3xl mb-2">${selectedLink.title}</div>
+                <div class="w-full text-right italic font-light mb-4">
+                  <span>Published on: ${selectedLink.publishDate}</span>
+                  <a
+                    href="${selectedLink.link}"
+                    class="block text-sky-700 underline"
+                    >Read more...</a
+                  >
+                </div>
+                <${Markup} type="html" markup="${selectedLink.description}" />
+              </div>
+            `}
+      </div>
 
       <${addFeedModal} onsubmit=${processAdd} />
     </div>

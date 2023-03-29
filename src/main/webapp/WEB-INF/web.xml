@@ -14,9 +14,19 @@
       <servlet-class>me.trfdeer.SourcesServlet</servlet-class>
    </servlet>
 
+   <servlet>
+      <servlet-name>feed</servlet-name>
+      <servlet-class>me.trfdeer.FeedServlet</servlet-class>
+   </servlet>
+
    <servlet-mapping>
       <servlet-name>sources</servlet-name>
       <url-pattern>/sources</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>feed</servlet-name>
+      <url-pattern>/feed</url-pattern>
    </servlet-mapping>
 
 </web-app>

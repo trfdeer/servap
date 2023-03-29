@@ -1,12 +1,12 @@
 package me.trfdeer.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class SourceResponse {
-    public ArrayList<Source> sources;
-    public ArrayList<String> folders;
+    public List<Source> sources;
+    public List<String> folders;
 
-    public SourceResponse(ArrayList<Source> sources, ArrayList<String> folders) {
+    public SourceResponse(List<Source> sources, List<String> folders) {
         this.sources = sources;
         this.folders = folders;
     }
