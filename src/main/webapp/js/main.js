@@ -38,6 +38,16 @@ const App = () => {
       .catch((err) => alert(`Failed to get sources: ${err}`));
   };
 
+  const deleteSource = () => {
+    fetch(`/sources?feed_id=${selectedSource.id}`, { method: "DELETE" })
+      .then((resp) => resp.json())
+      .then((data) => {
+        alert("Feed Deleted!");
+      })
+      .catch((err) => alert(`Failed to delete source: ${err}`));
+    refreshFeed();
+  };
+
   const processAdd = (ev) => {
     ev.preventDefault();
 
@@ -170,6 +180,12 @@ const App = () => {
                 </button>
                 <button class="${buttonClasses}" onclick=${refreshFeed}>
                   Refresh Feed
+                </button>
+                <button
+                  class="${buttonClasses} bg-red-400"
+                  onClick=${deleteSource}
+                >
+                  Delete Feed
                 </button>
                 <${editFeedModal}
                   id=${selectedSource.id}
