@@ -225,7 +225,7 @@ public class DataStore {
     public List<Link> getLinks(int sourceId) {
         try {
             PreparedStatement st = this.conn.prepareStatement(
-                    "SELECT id, title, link, description, publish_date, author FROM links WHERE source_id=?");
+                    "SELECT id, title, link, description, publish_date, author FROM links WHERE source_id=? ORDER BY publish_date DESC");
 
             st.setInt(1, sourceId);
             ResultSet rs = st.executeQuery();
