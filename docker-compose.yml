@@ -1,20 +1,24 @@
 version: '3'
 
 services:
-
   db:
     image: mysql
-    ports:
-      - 3306:3306
-    environment:
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: servap
-      MYSQL_ROOT_PASSWORD: example
+    env_file:
+      - .env
     volumes:
       - ./sql:/docker-entrypoint-initdb.d:ro
 
   adminer:
     image: adminer
     ports:
+      - 8081:8080
+    depends_on:
+      - db
+
+  app:
+    build:
+      dockerfile: Dockerfile
+    ports:
       - 8080:8080
+    depends_on:
+      - db
