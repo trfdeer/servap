@@ -24,6 +24,7 @@ public class DataStore {
 
         this.conn = DriverManager.getConnection(connectionString, username, password);
         this.conn.setAutoCommit(false);
+        System.out.println("Connected to database");
     }
 
     public Connection getConnection() {

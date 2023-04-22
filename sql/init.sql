@@ -20,3 +20,5 @@ CREATE TABLE servap.links(
 	PRIMARY KEY (id),
 	FOREIGN KEY (source_id) REFERENCES servap.sources(id) ON DELETE CASCADE
 );
+
+GRANT ALL PRIVILEGES ON servap.* TO user@'%' IDENTIFIED BY 'password';
