@@ -16,7 +16,7 @@
         <depJakartaVersion>6.0.0</depJakartaVersion>
         <depGsonVersion>2.10.1</depGsonVersion>
         <depMySQLDriverVersion>8.0.32</depMySQLDriverVersion>
-        <depSqliteDriverVersion>3.41.2.0</depSqliteDriverVersion>
+        <depSqliteDriverVersion>3.41.2.2</depSqliteDriverVersion>
         <depDotenvJavaVersion>2.3.2</depDotenvJavaVersion>
         <depRomeVersion>2.1.0</depRomeVersion>
 
